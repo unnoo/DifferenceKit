@@ -19,7 +19,8 @@ public extension UITableView {
         using stagedChangeset: StagedChangeset<C>,
         with animation: @autoclosure () -> RowAnimation,
         interrupt: ((Changeset<C>) -> Bool)? = nil,
-        setData: (C) -> Void
+        setData: (C) -> Void,
+        completion: (() -> Void)? = nil
         ) {
         reload(
             using: stagedChangeset,
@@ -30,7 +31,8 @@ public extension UITableView {
             insertRowsAnimation: animation(),
             reloadRowsAnimation: animation(),
             interrupt: interrupt,
-            setData: setData
+            setData: setData,
+            completion: completion
         )
     }
 
@@ -61,8 +63,11 @@ public extension UITableView {
         insertRowsAnimation: @autoclosure () -> RowAnimation,
         reloadRowsAnimation: @autoclosure () -> RowAnimation,
         interrupt: ((Changeset<C>) -> Bool)? = nil,
-        setData: (C) -> Void
+        setData: (C) -> Void,
+        completion: (() -> Void)? = nil
         ) {
+        defer { completion?() }
+
         if case .none = window, let data = stagedChangeset.last?.data {
             setData(data)
             return reloadData()
@@ -102,7 +107,13 @@ public extension UITableView {
                 }
 
                 if !changeset.elementUpdated.isEmpty {
-                    reloadRows(at: changeset.elementUpdated.map { IndexPath(row: $0.element, section: $0.section) }, with: reloadRowsAnimation())
+                    let rows = changeset.elementUpdated.map { IndexPath(row: $0.element, section: $0.section) }
+
+                    if #available(iOS 15.0, *) {
+                        reconfigureRows(at: rows)
+                    } else {
+                        reloadRows(at: rows, with: reloadRowsAnimation())
+                    }
                 }
 
                 for (source, target) in changeset.elementMoved {
@@ -140,8 +151,11 @@ public extension UICollectionView {
     func reload<C>(
         using stagedChangeset: StagedChangeset<C>,
         interrupt: ((Changeset<C>) -> Bool)? = nil,
-        setData: (C) -> Void
+        setData: (C) -> Void,
+        completion: (() -> Void)? = nil
         ) {
+        defer { completion?() }
+
         if case .none = window, let data = stagedChangeset.last?.data {
             setData(data)
             return reloadData()
@@ -181,7 +195,13 @@ public extension UICollectionView {
                 }
 
                 if !changeset.elementUpdated.isEmpty {
-                    reloadItems(at: changeset.elementUpdated.map { IndexPath(item: $0.element, section: $0.section) })
+                    let items = changeset.elementUpdated.map { IndexPath(item: $0.element, section: $0.section) }
+
+                    if #available(iOS 15.0, *) {
+                        reconfigureItems(at: items)
+                    } else {
+                        reloadItems(at: items)
+                    }
                 }
 
                 for (source, target) in changeset.elementMoved {

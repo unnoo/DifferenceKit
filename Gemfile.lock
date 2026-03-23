@@ -38,7 +38,7 @@ GEM
       fuzzy_match (~> 2.0.4)
       nap (~> 1.0)
     cocoapods-deintegrate (1.0.4)
-    cocoapods-downloader (1.2.2)
+    cocoapods-downloader (1.6.3)
     cocoapods-plugins (1.0.0)
       nap
     cocoapods-search (1.0.0)
@@ -82,7 +82,7 @@ GEM
       ffi (~> 1.9)
     sqlite3 (1.4.1)
     thread_safe (0.3.6)
-    tzinfo (1.2.5)
+    tzinfo (1.2.10)
       thread_safe (~> 0.1)
     xcinvoke (0.3.0)
       liferaft (~> 0.0.6)
